@@ -22,7 +22,10 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -123,10 +126,15 @@ cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', '')
 if cors_origins:
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins.split(',')]
     CORS_ALLOW_ALL_ORIGINS = False
+    CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 else:
     # Development default — allow all
     CORS_ALLOW_ALL_ORIGINS = True
+    CSRF_TRUSTED_ORIGINS = []
 
+# Trust render/nginx proxy headers for host and HTTPS
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # REST Framework defaults
 REST_FRAMEWORK = {
