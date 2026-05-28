@@ -1,0 +1,13 @@
+meter_id,account_number,billing_start,billing_end,usage_kwh,demand_kw,tariff,facility
+MTR-001,ACCT-100,2026-03-01,2026-03-31,24500,85,Commercial-TOU,Main Office Building
+MTR-002,ACCT-100,2026-03-01,2026-03-31,18200,62,Commercial-TOU,Warehouse A
+MTR-003,ACCT-101,2026-03-05,2026-04-04,31000,110,Industrial,Manufacturing Plant 1
+MTR-001,ACCT-100,2026-04-01,2026-04-30,26800,90,Commercial-TOU,Main Office Building
+MTR-004,ACCT-102,2026-03-15,2026-04-14,8500,45,Small Commercial,Branch Office East
+MTR-002,ACCT-100,2026-04-01,2026-04-30,17600,58,Commercial-TOU,Warehouse A
+MTR-003,ACCT-101,2026-04-05,2026-05-04,28900,105,Industrial,Manufacturing Plant 1
+,ACCT-103,2026-03-01,2026-03-31,15000,50,Commercial-TOU,Branch Office West
+MTR-005,ACCT-104,2026-04-30,2026-04-01,22000,75,Commercial-TOU,Data Center
+MTR-006,ACCT-105,2026-03-01,2026-03-31,520000,1800,Industrial,Smelting Facility
+MTR-001,ACCT-100,2026-03-01,2026-03-31,24500,85,Commercial-TOU,Main Office Building
+MTR-007,ACCT-106,2026-02-01,2026-04-15,45000,130,Industrial,Remote Facility

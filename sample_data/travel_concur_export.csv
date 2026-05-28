@@ -1,0 +1,13 @@
+trip_id,traveler,employee_id,category,booking_date,travel_date,origin,destination,distance_km,hotel_nights,city,country
+TRP-001,Rahul Sharma,EMP-101,Flight,2026-03-01,2026-03-10,DEL,LHR,,,,
+TRP-002,Rahul Sharma,EMP-101,Hotel,2026-03-01,2026-03-10,,,,,4,London,UK
+TRP-003,Priya Patel,EMP-102,Flight,2026-03-05,2026-03-12,BOM,SIN,,,,
+TRP-004,Priya Patel,EMP-102,Hotel,2026-03-05,2026-03-12,,,,,3,Singapore,Singapore
+TRP-005,John Miller,EMP-201,Flight,2026-03-10,2026-03-15,JFK,LAX,3970,,,,
+TRP-006,John Miller,EMP-201,Taxi,2026-03-15,2026-03-15,,,45,,Los Angeles,US
+TRP-007,Anita Desai,EMP-103,Rail,2026-03-20,2026-03-20,,,280,,Delhi-Mumbai,India
+TRP-008,Anita Desai,EMP-103,Flight,2026-03-22,2026-03-25,DEL,XYZ,,,,
+TRP-009,James Wong,EMP-202,Flight,2026-04-01,2026-04-05,SFO,NRT,,,,
+TRP-010,James Wong,EMP-202,Hotel,2026-04-01,2026-04-05,,,,,5,Tokyo,Japan
+TRP-011,Priya Patel,EMP-102,Flight,2026-04-10,2026-04-12,BOM,,,,,
+TRP-012,Rahul Sharma,EMP-101,Segway Tour,2026-04-15,2026-04-15,,,15,,London,UK
