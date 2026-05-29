@@ -42,6 +42,12 @@ from .normalizers import get_normalizer
 @api_view(['GET'])
 def list_tenants(request):
     tenants = Tenant.objects.all()
+    if tenants.count() == 0:
+        tenant = Tenant.objects.create(
+            name="Default Tenant",
+            slug="default"
+        )
+        tenants = Tenant.objects.filter(id=tenant.id)
     serializer = TenantSerializer(tenants, many=True)
     return Response(serializer.data)
 
