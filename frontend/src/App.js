@@ -130,8 +130,12 @@ function App() {
       setTenantLoadError('');
       const savedTenantId = Number(localStorage.getItem(TENANT_STORAGE_KEY));
       const hasSavedTenant = Number.isFinite(savedTenantId) && tenantList.some(t => t.id === savedTenantId);
-      const initialTenantId = hasSavedTenant ? savedTenantId : tenantList[0].id;
-      updateTenantSelection(initialTenantId);
+      if (hasSavedTenant) {
+        updateTenantSelection(savedTenantId);
+      } else {
+        setTenantId(null);
+        localStorage.removeItem(TENANT_STORAGE_KEY);
+      }
     }).catch(error => {
       console.error(error);
       setTenantLoadError(
@@ -216,7 +220,8 @@ function App() {
           <select className="tenant-select" value={tenantId || ''}
             onChange={e => updateTenantSelection(Number(e.target.value))}
             disabled={tenants.length === 0}>
-            {!tenantId && <option value="">Loading tenant...</option>}
+            {tenantId === null && tenants.length > 0 && <option value="">Select tenant...</option>}
+            {!tenantId && tenants.length === 0 && <option value="">Loading tenant...</option>}
             {tenants.map(t => <option key={t.id} value={t.id}>{t.company_name}</option>)}
           </select>
         </div>
