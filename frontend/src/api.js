@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const API_BASE = (
   process.env.REACT_APP_API_BASE_URL ||
-  'https://breathe-esg-assignment-ol4h.onrender.com'
+  'https://breathe-esg-assignment-app.onrender.com'
 ).replace(/\/$/, '');
 
 const api = axios.create({
