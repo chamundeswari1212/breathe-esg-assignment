@@ -60,9 +60,9 @@ def api_root(request):
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def list_tenants(request):
-    tenants = Tenant.objects.all()
-    if tenants.count() == 0:
-        Tenant.objects.create(company_name="Default Tenant")
+    # Hide the placeholder default tenant once real tenants are seeded.
+    tenants = Tenant.objects.exclude(company_name='Default Tenant')
+    if not tenants.exists():
         tenants = Tenant.objects.all()
     serializer = TenantSerializer(tenants, many=True)
     return Response(serializer.data)
