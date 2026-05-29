@@ -124,12 +124,12 @@ function App() {
   }, [tenantId, filterSource, filterScope, filterStatus, filterConfidence, searchText]);
 
   useEffect(() => {
-    fetchTenants().then(res => {
-      const tenantList = res.data;
-      setTenants(tenantList);
+    fetchTenants()
+      .then(res => {
+        const tenantList = res.data;
 
+        // If no tenants from backend, use demo tenants
         if (tenantList.length === 0) {
-          // If backend has no tenants seeded, show demo tenants in the dropdown
           setTenants(DEMO_TENANTS);
           setTenantLoadError('No tenants found on backend — showing demo tenants for UI. Run seed_tenant to create real tenants.');
           setTenantId(null);
@@ -137,26 +137,32 @@ function App() {
           return;
         }
 
+        // We have real tenants from backend
+        setTenants(tenantList);
         setTenantLoadError('');
+
+        // Try to restore previously selected tenant
         const savedTenantId = Number(localStorage.getItem(TENANT_STORAGE_KEY));
         const hasSavedTenant = Number.isFinite(savedTenantId) && tenantList.some(t => t.id === savedTenantId);
+
         if (hasSavedTenant) {
-          updateTenantSelection(savedTenantId);
+          // Tenant is still available, restore selection
+          setTenantId(savedTenantId);
         } else {
+          // No saved tenant or it doesn't exist, require user to select
           setTenantId(null);
           localStorage.removeItem(TENANT_STORAGE_KEY);
-          // populate tenants from backend
-          setTenants(tenantList);
         }
-    }).catch(error => {
-      console.error(error);
-      setTenantLoadError(
-        error.response?.data?.error ||
-        error.message ||
-        'Could not load tenants from the backend.'
-      );
-    });
-  }, [updateTenantSelection]);
+      })
+      .catch(error => {
+        console.error(error);
+        setTenantLoadError(
+          error.response?.data?.error ||
+          error.message ||
+          'Could not load tenants from the backend.'
+        );
+      });
+  }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
   useEffect(() => { loadRecords(); }, [loadRecords]);
