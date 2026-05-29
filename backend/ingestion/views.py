@@ -456,6 +456,11 @@ def list_audit_logs(request):
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def summary(request):
+    if Tenant.objects.count() == 0:
+        Tenant.objects.create(
+        name="Default Tenant",
+        slug="default"
+    )
     tenant_id = request.query_params.get('tenant')
     qs = EmissionRecord.objects.all()
     batch_qs = ImportBatch.objects.all()
