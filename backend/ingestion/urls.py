@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    api_root,
     list_tenants,
     list_import_batches,
     upload_csv,
@@ -14,6 +15,7 @@ from .views import (
 )
 
 urlpatterns = [
+    path('', api_root, name='api-root'),
     path('tenants/', list_tenants, name='list-tenants'),
     path('import-batches/', list_import_batches, name='list-import-batches'),
     path('upload/', upload_csv, name='upload-csv'),

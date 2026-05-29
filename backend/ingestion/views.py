@@ -37,17 +37,33 @@ from .normalizers import get_normalizer
 
 
 # ---------------------------------------------------------------------------
+# API Root
+# ---------------------------------------------------------------------------
+@api_view(['GET'])
+def api_root(request):
+    return Response({
+        'message': 'ESG ingestion API',
+        'endpoints': {
+            'tenants': 'tenants/',
+            'import_batches': 'import-batches/',
+            'upload': 'upload/',
+            'records': 'records/',
+            'raw_records': 'raw-records/',
+            'audit': 'audit/',
+            'summary': 'summary/',
+        },
+    })
+
+
+# ---------------------------------------------------------------------------
 # Tenants
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def list_tenants(request):
     tenants = Tenant.objects.all()
     if tenants.count() == 0:
-        tenant = Tenant.objects.create(
-            name="Default Tenant",
-            slug="default"
-        )
-        tenants = Tenant.objects.filter(id=tenant.id)
+        Tenant.objects.create(company_name="Default Tenant")
+        tenants = Tenant.objects.all()
     serializer = TenantSerializer(tenants, many=True)
     return Response(serializer.data)
 
