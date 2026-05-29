@@ -48,7 +48,15 @@ function fmtNum(n) {
   return Number(n).toLocaleString('en-US', { maximumFractionDigits: 1 });
 }
 
+
 const TENANT_STORAGE_KEY = 'breathe_selected_tenant_id';
+
+// Demo tenants used when backend returns no tenants (keeps UI usable in demos)
+const DEMO_TENANTS = [
+  { id: -1, company_name: 'Acme Corp' },
+  { id: -2, company_name: 'BlueGrid Energy' },
+  { id: -3, company_name: 'GreenMiles Logistics' },
+];
 
 function App() {
   // ---- State ----
@@ -120,22 +128,26 @@ function App() {
       const tenantList = res.data;
       setTenants(tenantList);
 
-      if (tenantList.length === 0) {
-        setTenantId(null);
-        localStorage.removeItem(TENANT_STORAGE_KEY);
-        setTenantLoadError('No tenant found. Run the backend seed_tenant command or check the deployed backend database.');
-        return;
-      }
+        if (tenantList.length === 0) {
+          // If backend has no tenants seeded, show demo tenants in the dropdown
+          setTenants(DEMO_TENANTS);
+          setTenantLoadError('No tenants found on backend — showing demo tenants for UI. Run seed_tenant to create real tenants.');
+          setTenantId(null);
+          localStorage.removeItem(TENANT_STORAGE_KEY);
+          return;
+        }
 
-      setTenantLoadError('');
-      const savedTenantId = Number(localStorage.getItem(TENANT_STORAGE_KEY));
-      const hasSavedTenant = Number.isFinite(savedTenantId) && tenantList.some(t => t.id === savedTenantId);
-      if (hasSavedTenant) {
-        updateTenantSelection(savedTenantId);
-      } else {
-        setTenantId(null);
-        localStorage.removeItem(TENANT_STORAGE_KEY);
-      }
+        setTenantLoadError('');
+        const savedTenantId = Number(localStorage.getItem(TENANT_STORAGE_KEY));
+        const hasSavedTenant = Number.isFinite(savedTenantId) && tenantList.some(t => t.id === savedTenantId);
+        if (hasSavedTenant) {
+          updateTenantSelection(savedTenantId);
+        } else {
+          setTenantId(null);
+          localStorage.removeItem(TENANT_STORAGE_KEY);
+          // populate tenants from backend
+          setTenants(tenantList);
+        }
     }).catch(error => {
       console.error(error);
       setTenantLoadError(
