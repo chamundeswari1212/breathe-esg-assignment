@@ -13,6 +13,13 @@ const SOURCE_HELPERS = {
   TRAVEL: 'Corporate travel (Concur/Navan) export. Expected columns: trip_id, traveler, employee_id, category, booking_date, travel_date, origin, destination, distance_km, hotel_nights, city, country',
 };
 
+// Expected header columns for each source type (used for client-side validation)
+const EXPECTED_COLUMNS = {
+  SAP: ['BELNR', 'BUDAT', 'Werk', 'MATNR', 'MAKTX', 'Menge', 'MEINS', 'LIFNR'],
+  UTILITY: ['meter_id', 'account_number', 'billing_start', 'billing_end', 'usage_kwh', 'demand_kw', 'tariff', 'facility'],
+  TRAVEL: ['trip_id', 'traveler', 'employee_id', 'category', 'booking_date', 'travel_date', 'origin', 'destination', 'distance_km', 'hotel_nights', 'city', 'country'],
+};
+
 // ---- Badge helpers ----
 function statusBadgeClass(s) {
   const map = {
@@ -73,6 +80,7 @@ function App() {
   const [uploadFile, setUploadFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
+  const [uploadValid, setUploadValid] = useState(false);
 
   // Filters
   const [filterSource, setFilterSource] = useState('');
@@ -173,6 +181,10 @@ function App() {
       setUploadResult({ error: 'Choose a CSV file before uploading.' });
       return;
     }
+    if (!uploadValid) {
+      setUploadResult({ error: `Selected file does not look like a ${uploadSource} CSV. Please choose the correct file.` });
+      return;
+    }
     if (!tenantId) {
       setUploadResult({ error: tenantLoadError || 'Tenant is still loading. Try again in a moment.' });
       return;
@@ -195,6 +207,31 @@ function App() {
     }
     setUploading(false);
   };
+
+  // Validate CSV header columns on file/select change
+  useEffect(() => {
+    if (!uploadFile) {
+      setUploadValid(false);
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target.result || '';
+      const lines = text.split(/\r?\n/);
+      if (lines.length === 0) { setUploadValid(false); return; }
+      const headerLine = lines.find(l => l && l.trim() !== '') || '';
+      const headers = headerLine.split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const expected = EXPECTED_COLUMNS[uploadSource] || [];
+      const headersLower = headers.map(h => h.toLowerCase());
+      const expectedLower = expected.map(h => h.toLowerCase());
+      // Require that all expected columns are present in the header
+      const hasAll = expectedLower.every(col => headersLower.includes(col));
+      setUploadValid(hasAll);
+    };
+    reader.onerror = () => setUploadValid(false);
+    reader.readAsText(uploadFile);
+  }, [uploadFile, uploadSource]);
 
   const handleApprove = async (id) => {
     try { await approveRecord(id); loadAll(); loadRecords(); } catch (e) { alert(e.response?.data?.error || 'Error'); }
@@ -279,11 +316,16 @@ function App() {
             <input type="file" accept=".csv" className="file-input"
               onChange={e => setUploadFile(e.target.files[0])} />
           </div>
-          <button className="btn-upload" onClick={handleUpload} disabled={!uploadFile || uploading || !tenantId}>
+          <button className="btn-upload" onClick={handleUpload} disabled={!uploadFile || uploading || !tenantId || !uploadValid}>
             {uploading ? 'Uploading...' : tenantId ? 'Upload CSV' : 'Waiting for Backend'}
           </button>
         </div>
         <div className="upload-helper">{SOURCE_HELPERS[uploadSource]}</div>
+        {uploadFile && !uploadValid && (
+          <div className="upload-result" style={{marginTop:'8px'}}>
+            <span style={{color:'#f87171'}}>Selected CSV does not match expected columns for {uploadSource}. Upload disabled.</span>
+          </div>
+        )}
         {uploadResult && (
           <div className="upload-result">
             {uploadResult.error ? (
