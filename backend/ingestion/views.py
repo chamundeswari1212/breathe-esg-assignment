@@ -41,15 +41,24 @@ from .normalizers import get_normalizer
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def list_tenants(request):
-    tenants = Tenant.objects.all()
-    if tenants.count() == 0:
-        tenant = Tenant.objects.create(
-            name="Default Tenant",
-            slug="default"
+    try:
+        tenants = Tenant.objects.all()
+
+        if not tenants.exists():
+            tenant = Tenant.objects.create(
+                name="Default Tenant",
+                slug="default"
+            )
+            tenants = Tenant.objects.filter(id=tenant.id)
+
+        serializer = TenantSerializer(tenants, many=True)
+        return Response(serializer.data)
+
+    except Exception as e:
+        return Response(
+            {"error": str(e)},
+            status=500
         )
-        tenants = Tenant.objects.filter(id=tenant.id)
-    serializer = TenantSerializer(tenants, many=True)
-    return Response(serializer.data)
 
 
 # ---------------------------------------------------------------------------
