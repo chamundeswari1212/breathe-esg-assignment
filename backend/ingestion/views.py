@@ -60,20 +60,25 @@ def api_root(request):
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def list_tenants(request):
-    # Hide the placeholder default tenant once real tenants are seeded.
-    tenants = Tenant.objects.exclude(company_name='Default Tenant')
-    if tenants.exists():
-        serializer = TenantSerializer(tenants, many=True)
-        return Response(serializer.data)
-
-    # If only the placeholder/default tenant exists on the deployed DB,
-    # return a stable demo list so the UI shows the expected companies.
-    # This avoids forcing database seeding during demos.
     demo_list = [
         {'id': -1, 'company_name': 'Acme Corp', 'industry': '', 'country': '', 'created_at': None},
         {'id': -2, 'company_name': 'BlueGrid Energy', 'industry': '', 'country': '', 'created_at': None},
         {'id': -3, 'company_name': 'GreenMiles Logistics', 'industry': '', 'country': '', 'created_at': None},
     ]
+    demo_names = {tenant['company_name'] for tenant in demo_list}
+
+    tenants = Tenant.objects.exclude(company_name='Default Tenant')
+
+    # Preserve the full demo tenant list until a full set of actual tenant
+    # records is present or a non-demo tenant exists in the DB.
+    if tenants.exists():
+        if tenants.count() < len(demo_list) and not Tenant.objects.exclude(company_name__in=demo_names).exists():
+            return Response(demo_list)
+        serializer = TenantSerializer(tenants, many=True)
+        return Response(serializer.data)
+
+    # If only the placeholder/default tenant exists on the deployed DB,
+    # return a stable demo list so the UI shows the expected companies.
     return Response(demo_list)
 
 
