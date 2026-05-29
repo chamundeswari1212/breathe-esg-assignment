@@ -25,7 +25,7 @@ DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 allowed_hosts = os.environ.get('ALLOWED_HOSTS', '*')
 ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(',') if host.strip()]
 if not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['*']
+    ALLOWED_HOSTS = ['breathe-esg-assignment-app.onrender.com']
 
 
 # Application definition
