@@ -84,8 +84,24 @@ def list_tenants(request):
 def list_import_batches(request):
     tenant_id = request.query_params.get('tenant')
     qs = ImportBatch.objects.select_related('data_source').all()
+    
+    # Handle demo tenant IDs by mapping to real tenant
     if tenant_id:
-        qs = qs.filter(tenant_id=tenant_id)
+        demo_tenant_map = {
+            '-1': 'Acme Corp',
+            '-2': 'BlueGrid Energy',
+            '-3': 'GreenMiles Logistics',
+        }
+        if str(tenant_id) in demo_tenant_map:
+            tenant_name = demo_tenant_map[str(tenant_id)]
+            try:
+                real_tenant = Tenant.objects.get(company_name=tenant_name)
+                qs = qs.filter(tenant_id=real_tenant.id)
+            except Tenant.DoesNotExist:
+                # Tenant doesn't exist yet, return empty
+                pass
+        else:
+            qs = qs.filter(tenant_id=tenant_id)
     serializer = ImportBatchSerializer(qs, many=True)
     return Response(serializer.data)
 
@@ -111,10 +127,24 @@ def upload_csv(request):
     if not tenant_id:
         return Response({'error': 'tenant_id is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    try:
-        tenant = Tenant.objects.get(id=tenant_id)
-    except Tenant.DoesNotExist:
-        return Response({'error': 'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
+    # Handle demo tenant IDs (negative) by creating/fetching real Tenant objects
+    demo_tenant_map = {
+        -1: 'Acme Corp',
+        -2: 'BlueGrid Energy',
+        -3: 'GreenMiles Logistics',
+    }
+    
+    if int(tenant_id) in demo_tenant_map:
+        # Create or get the real Tenant for this demo ID
+        tenant, _ = Tenant.objects.get_or_create(
+            company_name=demo_tenant_map[int(tenant_id)],
+            defaults={'industry': '', 'country': ''}
+        )
+    else:
+        try:
+            tenant = Tenant.objects.get(id=tenant_id)
+        except Tenant.DoesNotExist:
+            return Response({'error': 'Tenant not found'}, status=status.HTTP_404_NOT_FOUND)
 
     # Get or create DataSource
     data_source, _ = DataSource.objects.get_or_create(
@@ -304,8 +334,23 @@ def list_records(request):
 
     qs = EmissionRecord.objects.select_related('raw_record').all()
 
+    # Handle demo tenant IDs by mapping to real tenant
     if tenant_id:
-        qs = qs.filter(tenant_id=tenant_id)
+        demo_tenant_map = {
+            '-1': 'Acme Corp',
+            '-2': 'BlueGrid Energy',
+            '-3': 'GreenMiles Logistics',
+        }
+        if str(tenant_id) in demo_tenant_map:
+            tenant_name = demo_tenant_map[str(tenant_id)]
+            try:
+                real_tenant = Tenant.objects.get(company_name=tenant_name)
+                qs = qs.filter(tenant_id=real_tenant.id)
+            except Tenant.DoesNotExist:
+                # Tenant doesn't exist yet, return empty
+                pass
+        else:
+            qs = qs.filter(tenant_id=tenant_id)
     if source_type:
         qs = qs.filter(source_type=source_type.upper())
     if scope:
@@ -473,8 +518,24 @@ def list_audit_logs(request):
     tenant_id = request.query_params.get('tenant')
     record_id = request.query_params.get('record')
     qs = AuditLog.objects.select_related('emission_record').all()
+    
+    # Handle demo tenant IDs by mapping to real tenant
     if tenant_id:
-        qs = qs.filter(tenant_id=tenant_id)
+        demo_tenant_map = {
+            '-1': 'Acme Corp',
+            '-2': 'BlueGrid Energy',
+            '-3': 'GreenMiles Logistics',
+        }
+        if str(tenant_id) in demo_tenant_map:
+            tenant_name = demo_tenant_map[str(tenant_id)]
+            try:
+                real_tenant = Tenant.objects.get(company_name=tenant_name)
+                qs = qs.filter(tenant_id=real_tenant.id)
+            except Tenant.DoesNotExist:
+                # Tenant doesn't exist yet, return empty
+                pass
+        else:
+            qs = qs.filter(tenant_id=tenant_id)
     if record_id:
         qs = qs.filter(emission_record_id=record_id)
     # Limit to last 200 to keep response manageable
@@ -492,10 +553,29 @@ def summary(request):
     batch_qs = ImportBatch.objects.all()
     raw_qs = RawRecord.objects.all()
 
+    # Handle demo tenant IDs by mapping to real tenant
     if tenant_id:
-        qs = qs.filter(tenant_id=tenant_id)
-        batch_qs = batch_qs.filter(tenant_id=tenant_id)
-        raw_qs = raw_qs.filter(tenant_id=tenant_id)
+        demo_tenant_map = {
+            '-1': 'Acme Corp',
+            '-2': 'BlueGrid Energy',
+            '-3': 'GreenMiles Logistics',
+        }
+        if str(tenant_id) in demo_tenant_map:
+            tenant_name = demo_tenant_map[str(tenant_id)]
+            try:
+                real_tenant = Tenant.objects.get(company_name=tenant_name)
+                qs = qs.filter(tenant_id=real_tenant.id)
+                batch_qs = batch_qs.filter(tenant_id=real_tenant.id)
+                raw_qs = raw_qs.filter(tenant_id=real_tenant.id)
+            except Tenant.DoesNotExist:
+                # Tenant doesn't exist yet, return empty counts
+                qs = EmissionRecord.objects.none()
+                batch_qs = ImportBatch.objects.none()
+                raw_qs = RawRecord.objects.none()
+        else:
+            qs = qs.filter(tenant_id=tenant_id)
+            batch_qs = batch_qs.filter(tenant_id=tenant_id)
+            raw_qs = raw_qs.filter(tenant_id=tenant_id)
 
     status_counts = {}
     for choice_val, _ in EmissionRecord.REVIEW_STATUS_CHOICES:
