@@ -41,24 +41,15 @@ from .normalizers import get_normalizer
 # ---------------------------------------------------------------------------
 @api_view(['GET'])
 def list_tenants(request):
-    try:
-        tenants = Tenant.objects.all()
-
-        if not tenants.exists():
-            tenant = Tenant.objects.create(
-                name="Default Tenant",
-                slug="default"
-            )
-            tenants = Tenant.objects.filter(id=tenant.id)
-
-        serializer = TenantSerializer(tenants, many=True)
-        return Response(serializer.data)
-
-    except Exception as e:
-        return Response(
-            {"error": str(e)},
-            status=500
+    tenants = Tenant.objects.all()
+    if tenants.count() == 0:
+        tenant = Tenant.objects.create(
+            name="Default Tenant",
+            slug="default"
         )
+        tenants = Tenant.objects.filter(id=tenant.id)
+    serializer = TenantSerializer(tenants, many=True)
+    return Response(serializer.data)
 
 
 # ---------------------------------------------------------------------------
@@ -472,10 +463,7 @@ def list_audit_logs(request):
 @api_view(['GET'])
 def summary(request):
     if Tenant.objects.count() == 0:
-        Tenant.objects.create(
-        name="Default Tenant",
-        slug="default"
-    )
+        Tenant.objects.create(company_name="Default Tenant")
     tenant_id = request.query_params.get('tenant')
     qs = EmissionRecord.objects.all()
     batch_qs = ImportBatch.objects.all()
